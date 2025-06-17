@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz: Metales Pesados</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+    .quiz-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 800px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .question {
+      margin-bottom: 15px;
+    }
+    .question h3 {
+      margin-bottom: 10px;
+    }
+    .answers label {
+      display: block;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+    .result {
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    #score-container {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    #timer {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #c0392b;
+      margin-bottom: 20px;
+    }
+    #start-btn, #restart-btn {
+      padding: 10px 20px;
+      font-size: 1em;
+      margin: 10px 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #3498db;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>Quiz: Metales Pesados</h1>
+    <div id="timer">Tiempo restante: 10</div>
+    <button id="start-btn" onclick="iniciarQuiz()">Iniciar Quiz</button>
+    <button id="restart-btn" onclick="location.reload()" style="display:none;">Reiniciar</button>
+    <form id="quiz-form" style="display:none;"></form>
+    <div id="score-container"></div>
+  </div>
+
+  <script>
+    const preguntas = [
+      { texto: "¿Qué son los metales pesados?", opciones: ["Minerales utilizados en joyería", "Elementos químicos con alta densidad y toxicidad", "Metales de colores brillantes"], correcta: 1 },
+      { texto: "¿Cuál de los siguientes es un metal pesado común?", opciones: ["Calcio", "Plomo", "Sodio"], correcta: 1 },
+      { texto: "¿Dónde pueden encontrarse los metales pesados en el medio ambiente?", opciones: ["En la atmósfera terrestre", "Solo en minas subterráneas", "En el suelo, el agua y el aire"], correcta: 2 },
+      { texto: "¿Qué industria es una fuente importante de emisión de mercurio?", opciones: ["Textil", "Química farmacéutica", "Minería de oro artesanal"], correcta: 2 },
+      { texto: "¿Qué efecto inmediato tiene el plomo en niños?", opciones: ["Dolores musculares", "Déficit cognitivo y de atención", "Mejora en el rendimiento escolar"], correcta: 1 },
+      { texto: "¿Qué metal pesado se encuentra comúnmente en baterías?", opciones: ["Zinc", "Litio", "Cadmio"], correcta: 2 },
+      { texto: "¿Cómo pueden entrar los metales pesados al cuerpo humano?", opciones: ["Solo por contacto con la piel", "Por inhalación, ingestión o absorción cutánea", "Solo a través del agua potable"], correcta: 1 },
+      { texto: "¿Cuál de estos alimentos puede acumular mercurio?", opciones: ["Lechuga", "Atún", "Manzanas"], correcta: 1 },
+      { texto: "¿Qué efecto a largo plazo puede causar el arsénico?", opciones: ["Pérdida temporal de cabello", "Cáncer de piel y órganos internos", "Estornudos frecuentes"], correcta: 1 },
+      { texto: "¿Qué ocurre cuando los metales pesados se acumulan en el ecosistema?", opciones: ["Se descomponen rápidamente", "Se integran a la cadena alimentaria", "Se disuelven en la atmósfera"], correcta: 1 },
+      { texto: "¿Cuál es un signo temprano de intoxicación por cadmio?", opciones: ["Fatiga muscular", "Daño renal", "Acné"], correcta: 1 },
+      { texto: "¿Qué grupo es más vulnerable a los efectos de los metales pesados?", opciones: ["Adultos mayores", "Deportistas", "Niños y mujeres embarazadas"], correcta: 2 },
+      { texto: "¿Cómo reducir la exposición en casa?", opciones: ["Hervir el agua del grifo", "Usar utensilios de plástico", "Evitar pinturas con base de plomo"], correcta: 2 },
+      { texto: "¿Qué metal se relaciona con el Alzheimer?", opciones: ["Aluminio", "Cobalto", "Estaño"], correcta: 0 },
+      { texto: "¿Por qué son peligrosos incluso en bajas concentraciones?", opciones: ["Tienen sabor desagradable", "Se acumulan en el organismo", "Aumentan la temperatura corporal"], correcta: 1 }
+    ];
+
+    const quizForm = document.getElementById("quiz-form");
+    const scoreContainer = document.getElementById("score-container");
+    const timerElement = document.getElementById("timer");
+    const startBtn = document.getElementById("start-btn");
+    const restartBtn = document.getElementById("restart-btn");
+
+    let score = 0;
+    let answered = Array(preguntas.length).fill(false);
+    let tiempoRestante = 10;
+    let timer;
+
+    function iniciarQuiz() {
+      startBtn.style.display = "none";
+      quizForm.style.display = "block";
+      generarPreguntas();
+      iniciarTemporizador();
+    }
+
+    function generarPreguntas() {
+      preguntas.forEach((pregunta, index) => {
+        const div = document.createElement("div");
+        div.className = "question";
+        div.innerHTML = `<h3>${index + 1}. ${pregunta.texto}</h3>`;
+
+        const answers = document.createElement("div");
+        answers.className = "answers";
+
+        pregunta.opciones.forEach((opcion, i) => {
+          answers.innerHTML += `
+            <label>
+              <input type="radio" name="q${index}" value="${i}" onclick="checkAnswer(${index}, ${i})">
+              ${opcion}
+            </label>
+          `;
+        });
+
+        const result = document.createElement("div");
+        result.id = `result${index}`;
+        result.className = "result";
+
+        div.appendChild(answers);
+        div.appendChild(result);
+        quizForm.appendChild(div);
+      });
+    }
+
+    function checkAnswer(preguntaIndex, respuestaSeleccionada) {
+      if (answered[preguntaIndex]) return;
+      answered[preguntaIndex] = true;
+
+      const correcta = preguntas[preguntaIndex].correcta;
+      const resultDiv = document.getElementById(`result${preguntaIndex}`);
+
+      if (respuestaSeleccionada === correcta) {
+        resultDiv.textContent = "✅ ¡Correcto!";
+        resultDiv.style.color = "green";
+        score++;
+      } else {
+        resultDiv.textContent = "❌ Incorrecto";
+        resultDiv.style.color = "red";
+      }
+    }
+
+    function iniciarTemporizador() {
+      timerElement.textContent = `Tiempo restante: ${tiempoRestante}`;
+      timer = setInterval(() => {
+        tiempoRestante--;
+        timerElement.textContent = `Tiempo restante: ${tiempoRestante}`;
+
+        if (tiempoRestante <= 0) {
+          clearInterval(timer);
+          timerElement.textContent = "⏰ ¡Tiempo terminado!";
+          mostrarPuntuacion();
+        }
+      }, 1000);
+    }
+
+    function mostrarPuntuacion() {
+      scoreContainer.textContent = `Tu puntuación final es: ${score} de ${preguntas.length}`;
+      const inputs = document.querySelectorAll('input[type="radio"]');
+      inputs.forEach(input => input.disabled = true);
+      restartBtn.style.display = "inline-block";
+    }
+  </script>
+</body>
+</html>
